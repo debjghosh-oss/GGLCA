@@ -5,7 +5,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from datetime import datetime
 
-def create_invoice_pdf(row, filename):
+def create_invoice_pdf(row, filename, logo_path="assets/logo.png"):
     c = canvas.Canvas(filename, pagesize=A4)
     width, height = A4
 
@@ -13,7 +13,17 @@ def create_invoice_pdf(row, filename):
     c.setFont("Helvetica-Bold", 22)
     c.drawString(width/2 - 40, height - 60, "Invoice")
 
-    # Organization details
+    # Add logo aligned with organization block (top-right)
+    if logo_path and os.path.exists(logo_path):
+        c.drawImage(
+            logo_path,
+            width - 180, height - 180,  # position aligned with org block
+            width=120, height=120,
+            preserveAspectRatio=True,
+            mask='auto'
+        )
+
+    # Organization details (left side)
     c.setFont("Helvetica", 12)
     c.drawString(50, height - 100, "Prachesta Socio Cultural Trust")
     c.drawString(50, height - 120, "Sobha Lakeview Clubhouse")
@@ -58,7 +68,7 @@ def create_invoice_pdf(row, filename):
 
     c.save()
 
-def generate_pdfs_from_excel(excel_file):
+def generate_pdfs_from_excel(excel_file, logo_path="assets/logo.png"):
     df = pd.read_excel(excel_file)
 
     base_dir = os.path.dirname(excel_file)
@@ -67,7 +77,7 @@ def generate_pdfs_from_excel(excel_file):
     for idx, row in df.iterrows():
         buyer_name = str(row["Buyer Name"]).replace(" ", "_")
         filename = os.path.join(base_dir, f"{base_name}_{buyer_name}_{idx+1}.pdf")
-        create_invoice_pdf(row, filename)
+        create_invoice_pdf(row, filename, logo_path)
         print(f"Created: {filename}")
 
 if __name__ == "__main__":
